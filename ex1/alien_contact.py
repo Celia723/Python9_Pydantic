@@ -19,7 +19,7 @@ class AlienContact(BaseModel):
     signal_strength: float = Field(ge=0.0, le=10.0)
     duration_minutes:int = Field(ge=1.0, le=1440)
     witness_count: int = Field(ge=1, le=100)
-    message_received: Optiona[str] = Field(default=None, max_length=500)
+    message_received: Optional[str] = Field(default=None, max_length=500)
     is_verified: bool = Field(default=False)
 
 
@@ -27,9 +27,9 @@ class AlienContact(BaseModel):
     def validate_cosmic_rules(self) -> "AlienContact":
         if not self.contact_id.startswith("AC"):
             raise ValueError("Contact ID must start with 'AC'")
-        if self.contact_type == ContactType.PHYSICAL and is_verified is False:
+        if self.contact_type == ContactType.PHYSICAL and self.is_verified is False:
             raise ValueError("Physical contact reports must be verified")
-        if self.contact_type == ContactType.TELEPATHIC and self.contact is < 3:
+        if self.contact_type == ContactType.TELEPATHIC and self.witness_count < 3:
             raise ValueError("Telepathic contact requires at least 3 witnesses")
         if self.signal_strength > 7.0 and self.message_received is None:
             raise ValueError("Strong signals (> 7.0) should include received messages")
@@ -75,4 +75,5 @@ if __name__ == "__main__":
         is_verified=False
         )
     except ValueError as e:
-        print(f"Expected validation error:\n {e}")
+        print("Expected validation error:")
+        print(e)
