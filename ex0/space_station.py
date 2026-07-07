@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Optional
 
 
-
 class SpaceStation(BaseModel):
     station_id: str = Field(min_length=3, max_length=10)
     name: str = Field(min_length=1, max_length=50)

@@ -1,7 +1,8 @@
 from enum import Enum
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel, Field, ValidationError, model_validator
+
 
 class CrewRank(str, Enum):
     CADET = "cadet"
@@ -9,6 +10,7 @@ class CrewRank(str, Enum):
     LIEUTENANT = "lieutenant"
     CAPTAIN = "captain"
     COMMANDER = "commander"
+
 
 class CrewMember(BaseModel):
     member_id: str = Field(min_length=3, max_length=10)
@@ -34,15 +36,19 @@ class SpaceMission(BaseModel):
     def validate_mission(self):
         if not self.mission_id.startswith("M"):
             raise ValueError("Mission ID must start with 'M'")
-        has_lider = any( m.rank in [CrewRank.CAPTAIN, CrewMember.COMMANDER] for m in self.crew)
+        has_lider = any(m.rank in [CrewRank.CAPTAIN, CrewRank.COMMANDER]
+                        for m in self.crew)
         if not has_lider:
-            raise ValueError("Miission Must have at least one Commander or Captain")
+            raise ValueError(
+                "Miission Must have at least one Commander or Captain")
         if self.duration_days > 365:
             experts = sum(m.years_experience >= 5 for m in self.crew)
-            if experts < self.crew / 2:
-                raise ValueError(" Long missions (> 365 days) need 50% experienced crew (5+ years)")
+            if experts < len(self.crew) / 2:
+                raise ValueError(
+                    "Long missions (> 365 days)" +
+                    "need 50% experienced crew (5+ years)")
         if any(not m.is_active for m in self.crew):
-            raise ValueError ("All crew members must be active")
+            raise ValueError("All crew members must be active")
         return self
 
 
@@ -51,16 +57,18 @@ if __name__ == "__main__":
     print("=========================================")
 
     comandante = CrewMember(
-        member_id="C01", name="Sarah Connor", rank=CrewRank.COMMANDER, 
-        age=40, specialization="Mission Command", years_experience=10, is_active=True
+        member_id="C01", name="Sarah Connor", rank=CrewRank.COMMANDER,
+        age=40, specialization="Mission Command",
+        years_experience=10, is_active=True
     )
     teniente = CrewMember(
-        member_id="L01", name="John Smith", rank=CrewRank.LIEUTENANT, 
+        member_id="L01", name="John Smith", rank=CrewRank.LIEUTENANT,
         age=32, specialization="Navigation", years_experience=6, is_active=True
     )
     oficial = CrewMember(
-        member_id="O01", name="Alice Johnson", rank=CrewRank.OFFICER, 
-        age=28, specialization="Engineering", years_experience=3, is_active=True
+        member_id="O01", name="Alice Johnson", rank=CrewRank.OFFICER,
+        age=28, specialization="Engineering",
+        years_experience=3, is_active=True
     )
 
     try:
@@ -91,12 +99,12 @@ if __name__ == "__main__":
     print("=========================================")
 
     try:
-        #Incorrect mission test
+        #   Incorrect mission test
         mision_invalida = SpaceMission(
             mission_id="M2024_FAIL",
             mission_name="Unguided Mission",
             destination="Moon",
-            launch_date= datetime.now(),
+            launch_date=datetime.now(),
             duration_days=100,
             crew=[oficial],
             budget_millions=500.0
